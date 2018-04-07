@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/dgrijalva/jwt-go"
-	"github.com/julienschmidt/httprouter"
+	"github.com/anpryl/image-storage/imagesvc/api"
+	"github.com/anpryl/image-storage/imagesvc/images"
 )
 
 const (
@@ -32,23 +32,13 @@ func main() {
 		log.Fatalln("Failed to create folder for images: ", err)
 	}
 
-	r := httprouter.New()
+	st := images.NewStorage(*folder)
 
-	r.POST("/images/:"+filenameParam, saveImageHandle(*folder))
-
-	// https://github.com/julienschmidt/httprouter#chaining-with-the-notfound-handler
-	r.HandleMethodNotAllowed = false
-	r.NotFound = http.FileServer(http.Dir(*folder)).ServeHTTP
+	r := api.New(st, *secret)
 
 	log.Fatalln(http.ListenAndServe(addr(*host, *port), r))
 }
 
 func addr(host string, port int) string {
 	return host + ":" + fmt.Sprint(port)
-}
-
-func saveImageHandle(folder string) httprouter.Handle {
-	return func(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		panic("not implemented")
-	}
 }
