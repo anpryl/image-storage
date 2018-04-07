@@ -29,7 +29,15 @@ func (s *ImageStorage) Save(filename string, r io.Reader) error {
 }
 
 func (s *ImageStorage) Delete(filename string) error {
-	return nil
+	fullPath, err := fullPath(s.folder, filename)
+	if err != nil {
+		return err
+	}
+	err = os.Remove(fullPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
 }
 
 func fullPath(folder, filename string) (string, error) {
