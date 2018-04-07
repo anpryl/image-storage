@@ -7,6 +7,7 @@ import (
 	"testing"
 	"testing/iotest"
 
+	"github.com/anpryl/image-storage/imagesvc/imgerrors"
 	"github.com/powerman/check"
 	"github.com/powerman/must"
 )
@@ -45,7 +46,7 @@ func TestSaveImageDuplicate(tt *testing.T) {
 	t.Nil(err)
 
 	err = st.Save(testFileName, bytes.NewBuffer(append(testFile, testFile...)))
-	t.EQ(err, errFileExist)
+	t.EQ(err, imgerrors.FileExist)
 
 	bs := must.ReadFile(tmpDir + "/" + testFileName)
 	t.Zero(bytes.Compare(bs, testFile))
@@ -71,7 +72,7 @@ func TestSaveImageEmptyFilename(tt *testing.T) {
 
 	st := NewStorage(tmpDir)
 	err := st.Save("", bytes.NewBuffer(testFile))
-	t.EQ(err, errEmptyFilename)
+	t.EQ(err, imgerrors.EmptyFilename)
 }
 
 func TestSaveImageTryEscapeFolderFilename(tt *testing.T) {
@@ -97,7 +98,7 @@ func TestSaveImageDotFilename(tt *testing.T) {
 
 	st := NewStorage(tmpDir)
 	err := st.Save(".", bytes.NewBuffer(testFile))
-	t.EQ(err, errEmptyFilename)
+	t.EQ(err, imgerrors.EmptyFilename)
 
 	_, err = ioutil.ReadFile(tmpDir + "/" + testFileName)
 	t.True(os.IsNotExist(err))
@@ -150,7 +151,7 @@ func TestGetImageNotFound(tt *testing.T) {
 	defer os.RemoveAll(tmpDir)
 	st := NewStorage(tmpDir)
 	_, err := st.Get(testFileName)
-	t.Err(err, errFileNotFound)
+	t.Err(err, imgerrors.FileNotFound)
 }
 
 func TestImages(tt *testing.T) {
