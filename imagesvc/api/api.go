@@ -2,15 +2,20 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/anpryl/image-storage/imagesvc/imgerrors"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 )
 
-const filenameParam = "filename"
+const (
+	filenameParam = "filename"
+	authHeader    = "Authorization"
+)
 
 type ImageStorage interface {
 	Save(filename string, r io.Reader) error
@@ -19,13 +24,35 @@ type ImageStorage interface {
 	Images() ([]string, error)
 }
 
-func New(s ImageStorage) http.Handler {
+func New(s ImageStorage, secret string) http.Handler {
+	r := routes(s)
+	return jwtMiddleware(secret, r.ServeHTTP)
+}
+
+func routes(s ImageStorage) http.Handler {
 	r := httprouter.New()
 	r.POST("/images/:"+filenameParam, saveImage(s))
 	r.DELETE("/images/:"+filenameParam, deleteImage(s))
 	r.GET("/images/:"+filenameParam, getImage(s))
 	r.GET("/images", listImages(s))
 	return r
+}
+
+func jwtMiddleware(secret string, next http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get(authHeader)
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(secret), nil
+		})
+		if err != nil || !token.Valid {
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next(rw, r)
+	}
 }
 
 func saveImage(s ImageStorage) httprouter.Handle {

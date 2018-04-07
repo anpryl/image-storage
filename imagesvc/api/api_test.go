@@ -4,21 +4,69 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/anpryl/image-storage/imagesvc/imgerrors"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/powerman/check"
 	"github.com/powerman/must"
 )
 
+const secret = "secret_phrase"
+
+func TestJwtFail(tt *testing.T) {
+	t := check.T{tt}
+	st := &TestImageStorage{}
+	mux := New(st, secret)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	resp, err := http.Get(srv.URL + "/images/1")
+	if t.Nil(err) {
+		t.EQ(resp.StatusCode, http.StatusUnauthorized)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, srv.URL+"/images/1", nil)
+	must.NoErr(err)
+	// Token already expired
+	token, err := signToken(secret, -1*time.Hour)
+	must.NoErr(err)
+	req.Header.Set("Authorization", token)
+	resp, err = http.DefaultClient.Do(req)
+	if t.Nil(err) {
+		t.EQ(resp.StatusCode, http.StatusUnauthorized)
+	}
+}
+
+func TestJwtSuccess(tt *testing.T) {
+	t := check.T{tt}
+	st := &TestImageStorage{}
+	mux := New(st, secret)
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	req, err := http.NewRequest(http.MethodGet, srv.URL+"/images/1", nil)
+	must.NoErr(err)
+	// Token should expire before check
+	token, err := signToken(secret, 1*time.Hour)
+	fmt.Println(token)
+	must.NoErr(err)
+	req.Header.Set("Authorization", token)
+	resp, err := http.DefaultClient.Do(req)
+	if t.Nil(err) {
+		t.EQ(resp.StatusCode, http.StatusNotFound)
+	}
+}
+
 func TestGetNotFound(tt *testing.T) {
 	t := check.T{tt}
 	st := &TestImageStorage{}
-	mux := New(st)
+	mux := routes(st)
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 	resp, err := http.Get(srv.URL + "/images/1")
@@ -36,7 +84,7 @@ func TestGet(tt *testing.T) {
 			name: file,
 		},
 	}
-	mux := New(st)
+	mux := routes(st)
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 	resp, err := http.Get(srv.URL + "/images/" + name)
@@ -55,7 +103,7 @@ func TestCreate(tt *testing.T) {
 	st := &TestImageStorage{
 		images: map[string][]byte{},
 	}
-	mux := New(st)
+	mux := routes(st)
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 	req, err := http.NewRequest(http.MethodPost, srv.URL+"/images/"+name, bytes.NewReader(file))
@@ -74,7 +122,7 @@ func TestDelete(tt *testing.T) {
 			name: file,
 		},
 	}
-	mux := New(st)
+	mux := routes(st)
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 	req, err := http.NewRequest(http.MethodDelete, srv.URL+"/images/"+name, nil)
@@ -99,7 +147,7 @@ func TestImages(tt *testing.T) {
 			"4": nil,
 		},
 	}
-	mux := New(st)
+	mux := routes(st)
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 	resp, err := http.Get(srv.URL + "/images")
@@ -163,4 +211,11 @@ func (t *TestImageStorage) Images() ([]string, error) {
 		images = append(images, k)
 	}
 	return images, t.err
+}
+
+func signToken(secret string, tokenDuration time.Duration) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(tokenDuration).Unix(),
+	})
+	return token.SignedString([]byte(secret))
 }
