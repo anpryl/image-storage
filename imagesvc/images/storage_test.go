@@ -130,3 +130,52 @@ func TestDeleteImageNoFileNoErr(tt *testing.T) {
 	_, err = ioutil.ReadFile(tmpDir + "/" + testFileName)
 	t.True(os.IsNotExist(err))
 }
+
+func TestGetImage(tt *testing.T) {
+	t := check.T{tt}
+	tmpDir := must.TempDir("", "")
+	defer os.RemoveAll(tmpDir)
+	st := NewStorage(tmpDir)
+	must.NoErr(st.Save(testFileName, bytes.NewBuffer(testFile)))
+	r, err := st.Get(testFileName)
+	t.Nil(err)
+	defer r.Close()
+	bs := must.ReadAll(r)
+	t.Zero(bytes.Compare(bs, testFile))
+}
+
+func TestGetImageNotFound(tt *testing.T) {
+	t := check.T{tt}
+	tmpDir := must.TempDir("", "")
+	defer os.RemoveAll(tmpDir)
+	st := NewStorage(tmpDir)
+	_, err := st.Get(testFileName)
+	t.Err(err, errFileNotFound)
+}
+
+func TestImages(tt *testing.T) {
+	t := check.T{tt}
+	tmpDir := must.TempDir("", "")
+	defer os.RemoveAll(tmpDir)
+	st := NewStorage(tmpDir)
+	testFileName1 := testFileName + "1"
+	testFileName2 := testFileName + "2"
+	testFileName3 := testFileName + "3"
+	must.NoErr(st.Save(testFileName1, bytes.NewBuffer(testFile)))
+	must.NoErr(st.Save(testFileName2, bytes.NewBuffer(testFile)))
+	must.NoErr(st.Save(testFileName3, bytes.NewBuffer(testFile)))
+
+	images, err := st.Images()
+	t.Nil(err)
+	t.DeepEqual(images, []string{testFileName1, testFileName2, testFileName3})
+}
+
+func TestImagesEmpty(tt *testing.T) {
+	t := check.T{tt}
+	tmpDir := must.TempDir("", "")
+	defer os.RemoveAll(tmpDir)
+	st := NewStorage(tmpDir)
+	images, err := st.Images()
+	t.Nil(err)
+	t.Zero(images)
+}
