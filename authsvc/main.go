@@ -32,7 +32,11 @@ func main() {
 	signToken := tokenSigner(*secret, *tokenDuration)
 	mux.HandleFunc("/token", newTokenHandler(signToken))
 
-	log.Fatalln(http.ListenAndServe(*host+":"+fmt.Sprint(*port), mux))
+	log.Fatalln(http.ListenAndServe(addr(*host, *port), mux))
+}
+
+func addr(host string, port int) string {
+	return host + ":" + fmt.Sprint(port)
 }
 
 type signTokenFunc func() (string, error)

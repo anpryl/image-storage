@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	_ "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 )
 
