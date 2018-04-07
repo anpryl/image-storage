@@ -3,6 +3,7 @@ package images
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 var (
 	errEmptyFilename = errors.New("Empty filename")
 	errFileExist     = errors.New("File exist")
+	errFileNotFound  = errors.New("File not found")
 )
 
 type ImageStorage struct {
@@ -40,6 +42,30 @@ func (s *ImageStorage) Delete(filename string) error {
 	return err
 }
 
+func (s *ImageStorage) Get(filename string) (io.ReadCloser, error) {
+	fullPath, err := fullPath(s.folder, filename)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkIsFileNotExist(fullPath); err != nil {
+		return nil, err
+	}
+	return os.Open(fullPath)
+}
+
+func (s *ImageStorage) Images() ([]string, error) {
+	files, err := ioutil.ReadDir(s.folder)
+	if err != nil {
+		return nil, err
+	}
+
+	var filenames []string
+	for _, f := range files {
+		filenames = append(filenames, f.Name())
+	}
+	return filenames, nil
+}
+
 func fullPath(folder, filename string) (string, error) {
 	filename = filepath.Base(filename)
 	if filename == "" || filename == "." {
@@ -60,6 +86,13 @@ func writeFile(fullPath string, r io.Reader) error {
 			log.Println("Failed to write file", removeErr)
 		}
 		return err
+	}
+	return nil
+}
+
+func checkIsFileNotExist(fullPath string) error {
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return errFileNotFound
 	}
 	return nil
 }
