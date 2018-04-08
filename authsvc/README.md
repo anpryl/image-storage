@@ -10,18 +10,15 @@ Service generate access tokens for image-storage
 ```
 
 ## Usage
-Available options:
+Available options:  
 `docker run authsvc --help`  
-
-Start:
+Start:  
 `docker run -p 4000:4000 imagesvc -secret super_secret_phrase -host 0.0.0.0`
 
 ## API
 
-GET /token
-
-Response:
-
+GET /token  
+Response:  
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MjMyMTg5NTZ9.wHEYwK0XUUSHi7mAT4Q0ZD0Mr5trs1oAcTaCsykdyfM"
