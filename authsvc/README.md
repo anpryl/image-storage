@@ -17,6 +17,7 @@ Start:
 
 ## API
 
+### Generate new token:  
 GET /token  
 Response:  
 ```json
