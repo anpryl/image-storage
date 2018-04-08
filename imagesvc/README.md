@@ -22,9 +22,10 @@ Every endpoint check ~Authorization~ header, it should contain signed token
 
 ### Errors
 
-* Empty filename
-* File exist
-* File not found
+* Unauthorized(Status code 401)
+* Empty filename(Status code 400)
+* File exist(Status code 400)
+* File not found(Status code 404)
 
 ### Save image
 POST /images/:name  
