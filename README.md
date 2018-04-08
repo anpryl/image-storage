@@ -17,6 +17,8 @@ docker-compose up
 
 ## Usage example
 
+For more details and configuration info visit services README files.
+
 ```
 # Check jwt middleware
 $ http GET http://127.0.0.1/imagesvc/images Authorization:1
