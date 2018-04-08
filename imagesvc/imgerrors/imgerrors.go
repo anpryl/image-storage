@@ -5,7 +5,7 @@ import (
 )
 
 type ImageServiceError struct {
-	StatusCode int    `json:"code"`
+	StatusCode int    `json:"-"`
 	Message    string `json:"message"`
 }
 
