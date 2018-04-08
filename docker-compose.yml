@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: traefik:1.5.4
+    command: --api --docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - image-storage
+
+  authsvc:
+    image: authsvc
+    build: authsvc/.
+    command: -secret CBpRW7Ka7rrLXZkB -host 0.0.0.0
+    ports:
+      - "4000:4000"
+    restart: always
+    networks:
+      - image-storage 
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip:/authsvc"
+
+  imagesvc:
+    image: imagesvc
+    build: imagesvc/.
+    command: -secret CBpRW7Ka7rrLXZkB -host 0.0.0.0
+    ports:
+      - "4001:4000"
+    restart: always
+    networks:
+      - image-storage
+    volumes:
+      - imagesvc-images:/app/images
+    labels:
+      - "traefik.frontend.rule=PathPrefixStrip:/imagesvc"
+
+networks:
+  image-storage:
+
+volumes:
+  imagesvc-images:
