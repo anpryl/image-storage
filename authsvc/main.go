@@ -13,7 +13,7 @@ import (
 
 func main() {
 	var host = flag.String("host", "127.0.0.1", "Bind to host address (default: 127.0.0.1)")
-	var port = flag.Int("port", 80, "Use port for clients (default: 80)")
+	var port = flag.Int("port", 4000, "Use port for clients (default: 4000)")
 	var secret = flag.String("secret", "", "Secret used to sign auth tokens")
 	var tokenDuration = flag.Duration(
 		"token_duration",
