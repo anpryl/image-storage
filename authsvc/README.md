@@ -13,7 +13,7 @@ Service generate access tokens for image-storage
 Available options:  
 `docker run authsvc --help`  
 Start:  
-`docker run -p 4000:4000 imagesvc -secret super_secret_phrase -host 0.0.0.0`
+`docker run -p 4000:4000 authsvc -secret super_secret_phrase -host 0.0.0.0`
 
 ## API
 
