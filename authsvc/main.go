@@ -32,7 +32,9 @@ func main() {
 	signToken := tokenSigner(*secret, *tokenDuration)
 	mux.HandleFunc("/token", newTokenHandler(signToken))
 
-	log.Fatalln(http.ListenAndServe(addr(*host, *port), mux))
+	addr := addr(*host, *port)
+	log.Println("Starting server at", addr)
+	log.Fatalln(http.ListenAndServe(addr, mux))
 }
 
 func addr(host string, port int) string {

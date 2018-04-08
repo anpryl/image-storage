@@ -34,9 +34,11 @@ func main() {
 
 	st := images.NewStorage(*folder)
 
-	r := api.New(st, *secret)
+	mux := api.New(st, *secret)
 
-	log.Fatalln(http.ListenAndServe(addr(*host, *port), r))
+	addr := addr(*host, *port)
+	log.Println("Starting server at", addr)
+	log.Fatalln(http.ListenAndServe(addr, mux))
 }
 
 func addr(host string, port int) string {
