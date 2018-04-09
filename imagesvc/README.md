@@ -2,7 +2,7 @@
 Service storing and serving images for image-storage
 
 ## Requirements
-[Docker](https://docs.docker.com/install)  
+[Docker 17.09+](https://docs.docker.com/install)  
 [httpie](https://httpie.org/)(for testing, curl has issues with file upload)  
 
 ## Build

@@ -2,7 +2,7 @@
 Service generate access tokens for image-storage
 
 ## Requirements
-[Docker](https://docs.docker.com/install)
+[Docker 17.09+](https://docs.docker.com/install)  
 
 ## Build
 ```

@@ -6,7 +6,7 @@ Consist of two services:
 * [imagesvc](https://github.com/anpryl/image-storage/tree/master/imagesvc) available at /imagesvc
 
 ## Requirements
-[Docker](https://docs.docker.com/install)  
+[Docker 17.09+](https://docs.docker.com/install)  
 [docker-compose](https://docs.docker.com/compose/install)  
 [httpie](https://httpie.org/)(for testing, curl has issues with file upload)  
 
