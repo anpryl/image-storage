@@ -28,6 +28,6 @@ Response:
 
 Example:  
 ```
-$ curl -X GET http://localhost:4000/token
+$ curl -X GET http://127.0.0.1:4000/token
 {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MjMyMTk2NTJ9.cAVvNdRwJyUvMO0DvH7K-v0iFDkqq18VahObV-wj9EE"}
 ```
