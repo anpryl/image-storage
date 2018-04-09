@@ -7,6 +7,7 @@ WORKDIR $GOPATH/src/github.com/image-storage/imagesvc
 ADD https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-386 .
 RUN chmod +x dep-linux-386 && \
     ./dep-linux-386 ensure && \
+    go test ./... && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app/imagesvc ./cmd/imagesvc/main.go && \
     cd /app && \
     strip --strip-unneeded imagesvc
